@@ -88,10 +88,10 @@ initialize_world (char* exception_file_names)
     FPR = (double *) xmalloc (FPR_LENGTH * sizeof (double));
   /* Allocate the memory */
   make_memory (initial_text_size,
-	       initial_data_size, initial_data_limit,
-	       initial_stack_size, initial_stack_limit,
-	       initial_k_text_size,
-	       initial_k_data_size, initial_k_data_limit);
+               initial_data_size, initial_data_limit,
+               initial_stack_size, initial_stack_limit,
+               initial_k_text_size,
+               initial_k_data_size, initial_k_data_limit);
   initialize_registers ();
   initialize_inst_tables ();
   initialize_symbol_table ();
@@ -131,8 +131,8 @@ initialize_world (char* exception_file_names)
 
       if (!bare_machine)
       {
-	(void)make_label_global ("main"); /* In case .globl main forgotten */
-	(void)record_label ("main", 0, 0);
+        (void)make_label_global ("main"); /* In case .globl main forgotten */
+        (void)record_label ("main", 0, 0);
       }
     }
   initialize_scanner (stdin);
@@ -176,7 +176,7 @@ initialize_registers ()
   CP0_Config = 0;
 #endif
 
-  FIR = FIR_W | FIR_D | FIR_S;	/* Word, double, & single implemented */
+  FIR = FIR_W | FIR_D | FIR_S;        /* Word, double, & single implemented */
   FCSR = 0x0;
   FCCR = 0x0;
   FEXR = 0x0;
@@ -247,7 +247,7 @@ initialize_stack(const char *command_line)
         if (a != args)
         {
             if (*args != '\0')
-                *args++ = '\0';	/* Null terminate */
+                *args++ = '\0';        /* Null terminate */
 
             argv[argc++] = a;
 
@@ -266,7 +266,7 @@ initialize_stack(const char *command_line)
 /* Initialize the SPIM stack with ARGC, ARGV, and ENVP data. */
 
 #ifdef _MSC_VER
-#define environ	_environ
+#define environ        _environ
 #endif
 
 void
@@ -291,18 +291,18 @@ initialize_run_stack (int argc, char **argv)
     addrs[j++] = copy_str_to_stack (argv[i]);
 
   /* Align stack pointer for word-size data */
-  R[REG_SP] = R[REG_SP] & ~3;	/* Round down to nearest word */
-  R[REG_SP] -= BYTES_PER_WORD;	/* First free word on stack */
-  R[REG_SP] = R[REG_SP] & ~7;	/* Double-word align stack-pointer*/
+  R[REG_SP] = R[REG_SP] & ~3;        /* Round down to nearest word */
+  R[REG_SP] -= BYTES_PER_WORD;        /* First free word on stack */
+  R[REG_SP] = R[REG_SP] & ~7;        /* Double-word align stack-pointer*/
 
   /* Build vectors on stack: */
   /* env: */
-  (void)copy_int_to_stack (0);	/* Null-terminate vector */
+  (void)copy_int_to_stack (0);        /* Null-terminate vector */
   for (i = env_j - 1; i >= 0; i--)
     R[REG_A2] = copy_int_to_stack (addrs[i]);
 
   /* argv: */
-  (void)copy_int_to_stack (0);	/* Null-terminate vector */
+  (void)copy_int_to_stack (0);        /* Null-terminate vector */
   for (i = j - 1; i >= env_j; i--)
     R[REG_A1] = copy_int_to_stack (addrs[i]);
 
@@ -398,9 +398,9 @@ add_breakpoint (mem_addr addr)
   else
     {
       if (exception_occurred)
-	error ("Cannot put a breakpoint at address 0x%08x\n", addr);
+        error ("Cannot put a breakpoint at address 0x%08x\n", addr);
       else
-	error ("No instruction to breakpoint at address 0x%08x\n", addr);
+        error ("No instruction to breakpoint at address 0x%08x\n", addr);
       free (rec);
     }
 }
@@ -417,17 +417,17 @@ delete_breakpoint (mem_addr addr)
   for (p = NULL, b = bkpts; b != NULL; )
     if (b->addr == addr)
       {
-	bkpt *n;
+        bkpt *n;
 
-	set_mem_inst (addr, b->inst);
-	if (p == NULL)
-	  bkpts = b->next;
-	else
-	  p->next = b->next;
-	n = b->next;
-	free (b);
-	b = n;
-	deleted_one = 1;
+        set_mem_inst (addr, b->inst);
+        if (p == NULL)
+          bkpts = b->next;
+        else
+          p->next = b->next;
+        n = b->next;
+        free (b);
+        b = n;
+        deleted_one = 1;
       }
     else
       p = b, b = b->next;
@@ -487,11 +487,11 @@ map_string_to_name_val_val (name_val_val tbl[], int tbl_len, char *id)
       while (*idp == *np && *idp != '\0') {idp ++; np ++;}
 
       if (*np == '\0' && *idp == '\0') /* End of both strings */
-	return (& tbl[mid]);
+        return (& tbl[mid]);
       else if (*idp > *np)
-	low = mid + 1;
+        low = mid + 1;
       else
-	hi = mid - 1;
+        hi = mid - 1;
     }
 
   return NULL;
@@ -513,11 +513,11 @@ map_int_to_name_val_val (name_val_val tbl[], int tbl_len, int num)
       int mid = (low + hi) / 2;
 
       if (tbl[mid].value1 == num)
-	return (&tbl[mid]);
+        return (&tbl[mid]);
       else if (num > tbl[mid].value1)
-	low = mid + 1;
+        low = mid + 1;
       else
-	hi = mid - 1;
+        hi = mid - 1;
     }
 
   return NULL;
