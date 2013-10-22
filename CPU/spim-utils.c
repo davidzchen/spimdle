@@ -76,8 +76,6 @@ int initial_k_data_size = K_DATA_SIZE;
 
 mem_addr initial_k_data_limit = K_DATA_LIMIT;
 
-
-
 /* Initialize or reinitialize the state of the machine. */
 
 void
@@ -120,7 +118,7 @@ initialize_world (char* exception_file_names)
             if (!read_assembly_file (filename))
                fatal_error ("Cannot read exception handler: %s\n", filename);
 
-            write_output (message_out, "Loaded: %s\n", filename);
+            //write_output (message_out, "Loaded: %s\n", filename);
          }
 
       free (files);
