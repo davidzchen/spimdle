@@ -31,7 +31,7 @@ list(APPEND SPIM_SOURCES
   parser_yacc.c
   scanner.c
   syscall.c
-  display-utils.c
+  display.c
   string-stream.c)
 
 add_executable(spim ${SPIM_SOURCES})
