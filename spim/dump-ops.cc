@@ -30,19 +30,15 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #include <cstdio>
 #include <cstdlib>
+#include <cstdint>
 
-typedef struct inst_t
-{
+typedef struct inst_t {
   char *opcode;
-
-  union
-  {
-    unsigned int x;
-    struct
-    {
+  union {
+    int x;
+    struct {
       unsigned int funct:6;
       unsigned int pad:10;
       unsigned int rt:5;
@@ -52,81 +48,66 @@ typedef struct inst_t
   };
 } inst;
 
-
 #define OP(a, b, c, d) {a, d},
 
 inst ops [] = {
 #include "op.h"
 };
 
-
-int
-compare_ops (const void *a, const void *b)
-{
+int compare_ops(const void *a, const void *b) {
   inst* p1 = (inst*)a;
   inst* p2 = (inst*)b;
-  if (p1->f.op < p2->f.op)
+  if (p1->f.op < p2->f.op) {
     return (-1);
-  else if (p1->f.op > p2->f.op)
+  } else if (p1->f.op > p2->f.op) {
     return (1);
-  else
-    {
-      if (p1->f.rs < p2->f.rs)
-	return (-1);
-      else if (p1->f.rs > p2->f.rs)
-	return (1);
-      else
-	{
-	  if (p1->f.rt < p2->f.rt)
-	    return (-1);
-	  else if (p1->f.rt > p2->f.rt)
-	    return (1);
-	  else
-	    {
-	      if (p1->f.funct < p2->f.funct)
-		return (-1);
-	      else if (p1->f.funct > p2->f.funct)
-		return (1);
-	      else
-		return 0;
-	    }
-	}
-    }
+  }
+
+  if (p1->f.rs < p2->f.rs) {
+    return (-1);
+  } else if (p1->f.rs > p2->f.rs) {
+    return (1);
+  }
+
+  if (p1->f.rt < p2->f.rt) {
+    return (-1);
+  } else if (p1->f.rt > p2->f.rt) {
+    return (1);
+  }
+
+  if (p1->f.funct < p2->f.funct) {
+    return (-1);
+  } else if (p1->f.funct > p2->f.funct) {
+    return (1);
+  }
+  return 0;
 }
 
-int
-main (int argc, char** argv)
-{
-  /* Remove pseudo ops (opcode == -1) from table */
-  int empty, next;
-  for (empty = 0, next = 0; next < (sizeof(ops) / sizeof(ops[0])); next += 1)
-    {
-      if (-1 == ops[next].x)
-	{
-	}
-      else
-	{
-	  ops[empty] = ops[next];
-	  empty += 1;
-	}
+int main() {
+  // Remove pseudo ops (opcode == -1) from table.
+  uint32_t empty = 0;
+  for (uint32_t next = 0; next < (sizeof(ops) / sizeof(ops[0])); next += 1) {
+    if (ops[next].x == -1) {
+      continue;
     }
+    ops[empty] = ops[next];
+    empty += 1;
+  }
 
-  /* Radix sort instructions by field: op, rs, rt, funct */
+  // Radix sort instructions by field: op, rs, rt, funct
   qsort(ops, empty, sizeof(ops[0]), compare_ops);
 
-  /* Print related instructions in groups */
-  int i;
-  for (i = 0; i < empty; i += 1)
-    {
-      if (0 < i && ops[i - 1].f.op != ops[i].f.op)
-	printf ("\n");
-
-      printf ("%10s  op=%2d  rs=%2d  rt=%2d  funct=%02x      0x%08x\n",
-	      ops[i].opcode,
-	      ops[i].f.op,
-	      ops[i].f.rs,
-	      ops[i].f.rt,
-	      ops[i].f.funct,
-	      ops[i].x);
+  // Print related instructions in groups
+  for (uint32_t i = 0; i < empty; i += 1) {
+    if (0 < i && ops[i - 1].f.op != ops[i].f.op) {
+      printf ("\n");
     }
+    printf("%10s  op=%2d  rs=%2d  rt=%2d  funct=%02x      0x%08x\n",
+           ops[i].opcode,
+           ops[i].f.op,
+           ops[i].f.rs,
+           ops[i].f.rt,
+           ops[i].f.funct,
+           ops[i].x);
+  }
 }
