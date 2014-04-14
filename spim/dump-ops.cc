@@ -31,7 +31,8 @@
 */
 
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstdlib>
 
 typedef struct inst_t
 {
@@ -60,8 +61,10 @@ inst ops [] = {
 
 
 int
-compare_ops (inst *p1, inst *p2)
+compare_ops (const void *a, const void *b)
 {
+  inst* p1 = (inst*)a;
+  inst* p2 = (inst*)b;
   if (p1->f.op < p2->f.op)
     return (-1);
   else if (p1->f.op > p2->f.op)
@@ -91,7 +94,7 @@ compare_ops (inst *p1, inst *p2)
     }
 }
 
-
+int
 main (int argc, char** argv)
 {
   /* Remove pseudo ops (opcode == -1) from table */
@@ -109,7 +112,7 @@ main (int argc, char** argv)
     }
 
   /* Radix sort instructions by field: op, rs, rt, funct */
-  qsort (ops, empty, sizeof(ops[0]), compare_ops);
+  qsort(ops, empty, sizeof(ops[0]), compare_ops);
 
   /* Print related instructions in groups */
   int i;

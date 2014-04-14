@@ -6,8 +6,8 @@ rm -rf `find . -name CMakeCache.txt` \
        `find . -name CTestTestfile.cmake` \
        `find . -name Makefile` \
        `find . -name cmake_install.cmake` \
-       spim/parser_yacc.c \
-       spim/parser_yacc.h \
-       spim/parse_yacc.output \
+       spim/parser-yacc.c \
+       spim/parser-yacc.h \
+       spim/parse-yacc.output \
        spim/scanner.c
 

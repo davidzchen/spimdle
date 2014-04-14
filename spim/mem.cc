@@ -33,7 +33,7 @@
 
 #include "spim/spim.h"
 #include "spim/string-stream.h"
-#include "spim/spim-utils.h"
+#include "spim/utils.h"
 #include "spim/inst.h"
 #include "spim/reg.h"
 #include "spim/mem.h"

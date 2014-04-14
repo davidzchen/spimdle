@@ -70,14 +70,14 @@
 
 #include "spim/spim.h"
 #include "spim/string-stream.h"
-#include "spim/spim-utils.h"
+#include "spim/utils.h"
 #include "spim/inst.h"
 #include "spim/reg.h"
 #include "spim/mem.h"
 #include "spim/parser.h"
-#include "spim/sym-tbl.h"
+#include "spim/symbol-table.h"
 #include "spim/scanner.h"
-#include "spim/parser_yacc.h"
+#include "spim/parser-yacc.h"
 #include "spim/data.h"
 
 /* Internal functions: */

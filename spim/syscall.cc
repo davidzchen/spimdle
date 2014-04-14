@@ -49,7 +49,7 @@
 #include "spim/inst.h"
 #include "spim/reg.h"
 #include "spim/mem.h"
-#include "spim/sym-tbl.h"
+#include "spim/symbol-table.h"
 #include "spim/syscall.h"
 
 /* Decides which syscall to execute or simulate.  Returns zero upon

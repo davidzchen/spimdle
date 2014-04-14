@@ -32,13 +32,13 @@
 
 #include "spim/spim.h"
 #include "spim/string-stream.h"
-#include "spim/spim-utils.h"
+#include "spim/utils.h"
 #include "spim/inst.h"
 #include "spim/data.h"
 #include "spim/reg.h"
 #include "spim/mem.h"
 #include "spim/run.h"
-#include "spim/sym-tbl.h"
+#include "spim/symbol-table.h"
 
 char* int_reg_names[32] =
   {"r0", "at", "v0", "v1", "a0", "a1", "a2", "a3",
