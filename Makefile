@@ -54,16 +54,14 @@
 #
 
 # Path for directory that contains the source of the CPU code:
-CPU_DIR = ../CPU
+CPU_DIR = spim
 VPATH = src:$(CPU_DIR)
 
 # Path of directory that contains SPIM tests:
-TEST_DIR = ../Tests
+TEST_DIR = tests
 
 # Path of directory that contains documentation:
-DOC_DIR = ../Documentation
-
-
+DOC_DIR = doc
 
 # Full path for the directory that will hold the executable files:
 BIN_DIR = $(DESTDIR)/usr/bin
@@ -74,7 +72,6 @@ EXCEPTION_DIR = $(DESTDIR)/usr/share/spim
 # Full path for the directory that will hold the man files:
 MAN_DIR = $(DESTDIR)/usr/share/man/man1
 
-
 # If you have flex, use it instead of lex.  If you use flex, define this
 # variable and set LEXFLAGS.
 MYLEX = flex
@@ -83,11 +80,9 @@ MYLEX = flex
 # You can set the -8 flag so that funny characters do not hang the scanner.
 LEXFLAGS += -I -8
 
-
 # If you use lex, set the variables this way:
 #MYLEX = lex
 #LEXFLAGS =
-
 
 # SPIM works with either byacc or bison
 #YACC=byacc
@@ -96,18 +91,14 @@ LEXFLAGS += -I -8
 YACC=bison
 YFLAGS += -d --defines=parser_yacc.h --output=parser_yacc.c -p yy
 
-
 # Size of the segments when spim starts up (data segment must be >= 64K).
 # (These sizes are fine for most users since SPIM dynamically expands
 # the memory as necessary.)
 MEM_SIZES = -DTEXT_SIZE=65536 -DDATA_SIZE=131072 -DK_TEXT_SIZE=65536
 
-
 #
 # End of parameters
 #
-
-
 
 DEFINES = $(MEM_SIZES) -DDEFAULT_EXCEPTION_HANDLER="\"$(EXCEPTION_DIR)/exceptions.s\""
 
@@ -121,23 +112,28 @@ CSH = bash
 
 LEXCFLAGS += -O $(CFLAGS)
 
+OBJS = \
+	spim.o \
+	spim-utils.o \
+	run.o \
+	mem.o \
+	inst.o \
+	data.o \
+	sym-tbl.o \
+	parser_yacc.o \
+	lex.yy.o \
+	syscall.o \
+	display-utils.o \
+	string-stream.o
 
-
-OBJS = spim.o spim-utils.o run.o mem.o inst.o data.o sym-tbl.o parser_yacc.o lex.yy.o \
-       syscall.o display-utils.o string-stream.o
-
-
-spim:   $(OBJS)
+spim: $(OBJS)
 	$(CC) -g $(OBJS) $(LDFLAGS) -o spim -lm
-
-
-#
 
 #
 # Test spim with a torture test:
 #
 
-test:	spim
+test: spim
 	@echo
 	@echo "Testing tt.bare.s:"
 	$(CSH) -c "./spim -delayed_branches -delayed_loads -noexception -file $(TEST_DIR)/tt.bare.s >& test.out"
@@ -174,11 +170,8 @@ test_bare: spim
 	@echo
 	@echo
 
-#
-
-TAGS:	*.c *.h *.l *.y
+TAGS: *.c *.h *.l *.y
 	etags *.l *.y *.c *.h
-
 
 clean:
 	rm -f spim spim.exe *.o TAGS test.out lex.yy.c parser_yacc.c parser_yacc.h y.output
@@ -194,12 +187,9 @@ install-man:
 splint: spim
 	splint -weak -preproc -warnposix +matchanyintegral spim.c parser_yacc.c lex.yy.c
 
-
-
 #
 # Dependences not handled well by makedepend:
 #
-
 
 parser_yacc.h: parser_yacc.c
 
@@ -209,15 +199,12 @@ parser_yacc.c: $(CPU_DIR)/parser.y
 parser_yacc.o: parser_yacc.c
 	$(CC) $(CFLAGS) $(YCFLAGS) -c parser_yacc.c
 
-
 lex.yy.c: $(CPU_DIR)/scanner.l
 	$(MYLEX) $(LEXFLAGS) $(CPU_DIR)/scanner.l
 
 lex.yy.o: lex.yy.c
 	$(CC) $(LEXCFLAGS) -c lex.yy.c
 
-
-#
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 data.o: $(CPU_DIR)/spim.h
