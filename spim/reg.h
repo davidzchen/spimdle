@@ -69,13 +69,9 @@ extern mem_addr PC, nPC;
 
 extern char *int_reg_names[];
 
-
-
 /* Coprocessor registers: */
 
 extern reg_word CCR[4][32], CPR[4][32];
-
-
 
 /* Exeception handling registers (Coprocessor 0): */
 
@@ -156,8 +152,6 @@ extern reg_word CCR[4][32], CPR[4][32];
 			 | CP0_Config_AT	\
 			 | CP0_Config_AR	\
 			 | CP0_Config_MT)
-
-
 
 /* Floating Point Coprocessor (1) registers.
 

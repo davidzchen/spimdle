@@ -32,54 +32,53 @@
 
 
 #ifndef WIN32
-#include <unistd.h>
+# include <unistd.h>
 #endif
-#include <stdio.h>
-#include <ctype.h>
-#include <setjmp.h>
-#include <signal.h>
+# include <stdio.h>
+# include <ctype.h>
+# include <setjmp.h>
+# include <signal.h>
 #include <arpa/inet.h>
 
 
 #ifdef RS
 /* This is problem on HP Snakes, which define RS in syscall.h */
-#undef RS
+# undef RS
 #endif
 
 #include <sys/types.h>
 #include <sys/select.h>
 
 #ifdef _AIX
-#ifndef NBBY
-#define NBBY 8
-#endif
+# ifndef NBBY
+#  define NBBY 8
+# endif
 #endif
 
 
 #ifndef WIN32
-#include <sys/time.h>
-#ifdef NEED_TERMIOS
-#include <sys/ioctl.h>
-#include <sgtty.h>
-#else
-#include <termios.h>
-#endif
+# include <sys/time.h>
+# ifdef NEED_TERMIOS
+#  include <sys/ioctl.h>
+#  include <sgtty.h>
+# else
+#  include <termios.h>
+# endif
 #endif
 
 #include <stdarg.h>
 
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
-#include "parser.h"
-#include "sym-tbl.h"
-#include "scanner.h"
-#include "parser_yacc.h"
-#include "data.h"
-
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/parser.h"
+#include "spim/sym-tbl.h"
+#include "spim/scanner.h"
+#include "spim/parser_yacc.h"
+#include "spim/data.h"
 
 /* Internal functions: */
 
@@ -336,8 +335,6 @@ main (int argc, char **argv)
   return (spim_return_value);
 }
 
-
-
 /* Top-level read-eval-print loop for SPIM. */
 
 static void
@@ -359,7 +356,6 @@ top_level ()
     }
 }
 
-
 static void
 control_c_seen (int /*arg*/)
 {
@@ -367,7 +363,6 @@ control_c_seen (int /*arg*/)
   write_output (message_out, "\nExecution interrupted\n");
   longjmp (spim_top_level_env, 1);
 }
-
 
 /* SPIM commands */
 
@@ -947,8 +942,6 @@ write_assembled_code(char* program_name)
   return (false);
 }
 
-
-
 /* Print an error message. */
 
 void
@@ -1004,8 +997,6 @@ run_error (char *fmt, ...)
   va_end (args);
   longjmp (spim_top_level_env, 1);
 }
-
-
 
 /* IO facilities: */
 

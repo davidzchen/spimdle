@@ -56,8 +56,6 @@ typedef struct lab
 
 #define SYMBOL_IS_DEFINED(SYM) ((SYM)->addr != 0)
 
-
-
 /* Exported functions: */
 
 mem_addr find_symbol_address (char *symbol);

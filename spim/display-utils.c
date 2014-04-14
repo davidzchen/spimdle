@@ -30,24 +30,21 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "data.h"
-#include "reg.h"
-#include "mem.h"
-#include "run.h"
-#include "sym-tbl.h"
-
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/data.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/run.h"
+#include "spim/sym-tbl.h"
 
 char* int_reg_names[32] =
   {"r0", "at", "v0", "v1", "a0", "a1", "a2", "a3",
    "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7",
    "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7",
    "t8", "t9", "k0", "k1", "gp", "sp", "s8", "ra"};
-
 
 static mem_addr format_partial_line (str_stream *ss, mem_addr addr);
 
@@ -172,8 +169,6 @@ format_registers (str_stream *ss, int print_gpr_hex, int print_fpr_hex)
       ss_printf (ss, "\n");
     }
 }
-
-
 
 /* Write to the stream a printable representation of the instructions in
    memory addresses: FROM...TO. */

@@ -30,18 +30,16 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
-#include "sym-tbl.h"
-#include "parser.h"
-#include "run.h"
-#include "data.h"
-
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/sym-tbl.h"
+#include "spim/parser.h"
+#include "spim/run.h"
+#include "spim/data.h"
 
 /* The first 64K of the data segment are dedicated to small data
    segment, which is pointed to by $gp. This register points to the
@@ -60,8 +58,6 @@ static mem_addr next_gp_item_addr; /* Address of next item accessed off $gp */
 
 static bool auto_alignment = true; /* => align literal to natural bound*/
 
-
-
 /* If TO_KERNEL is true, subsequent data will be placed in the
    kernel data segment.  If false, data will go to the user's data
    segment.*/
@@ -72,14 +68,12 @@ user_kernel_data_segment (bool to_kernel)
     in_kernel = to_kernel;
 }
 
-
 void
 end_of_assembly_file ()
 {
   in_kernel = false;
   auto_alignment = true;
 }
-
 
 /* Set the point at which the first datum is stored to be ADDRESS +
    64K.	 The 64K increment allocates an area pointed to by register
@@ -99,7 +93,6 @@ data_begins_at_point (mem_addr addr)
     }
 }
 
-
 /* Set the point at which the first datum is stored in the kernel's
    data segment. */
 
@@ -108,7 +101,6 @@ k_data_begins_at_point (mem_addr addr)
 {
     next_k_data_pc = addr;
 }
-
 
 /* Arrange that the next datum is stored on a memory boundary with its
    low ALIGNMENT bits equal to 0.  If argument is 0, disable automatic
@@ -132,7 +124,6 @@ align_data (int alignment)
     }
 }
 
-
 void
 set_data_alignment (int alignment)
 {
@@ -140,13 +131,11 @@ set_data_alignment (int alignment)
     align_data (alignment);
 }
 
-
 void
 enable_data_alignment ()
 {
   auto_alignment = true;
 }
-
 
 /* Set the location (in user or kernel data space) for the next datum. */
 
@@ -159,7 +148,6 @@ set_data_pc (mem_addr addr)
     next_data_pc = addr;
 }
 
-
 /* Return the address at which the next datum will be stored.  */
 
 mem_addr
@@ -167,7 +155,6 @@ current_data_pc ()
 {
   return (DATA_PC);
 }
-
 
 /* Bump the address at which the next data will be stored by VALUE
    bytes. */
@@ -189,7 +176,6 @@ increment_data_pc (int delta)
     }
 }
 
-
 /* Process a .extern NAME SIZE directive. */
 
 void
@@ -207,7 +193,6 @@ extern_directive (char *name, int size)
       next_gp_item_addr += size;
     }
 }
-
 
 /* Process a .lcomm NAME SIZE directive. */
 
@@ -236,7 +221,6 @@ lcomm_directive (char *name, int size)
     }
 }
 
-
 /* Process a .ascii STRING or .asciiz STRING directive. */
 
 void
@@ -253,7 +237,6 @@ store_string (char *string, int length, bool null_terminate)
     }
 }
 
-
 /* Process a .byte EXPR directive. */
 
 void
@@ -262,7 +245,6 @@ store_byte (int value)
   set_mem_byte (DATA_PC, value);
   increment_data_pc (1);
 }
-
 
 /* Process a .half EXPR directive. */
 
@@ -286,7 +268,6 @@ store_half (int value)
     }
 }
 
-
 /* Process a .word EXPR directive. */
 
 void
@@ -309,7 +290,6 @@ store_word (int value)
     }
 }
 
-
 /* Process a .double EXPR directive. */
 
 void
@@ -328,7 +308,6 @@ store_double (double *value)
       increment_data_pc (BYTES_PER_WORD);
     }
 }
-
 
 /* Process a .float EXPR directive. */
 

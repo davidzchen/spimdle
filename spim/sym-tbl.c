@@ -30,25 +30,22 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
-#include "data.h"
-#include "parser.h"
-#include "sym-tbl.h"
-#include "parser_yacc.h"
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/data.h"
+#include "spim/parser.h"
+#include "spim/sym-tbl.h"
+#include "spim/parser_yacc.h"
 
 
 /* Local functions: */
 
 static void get_hash (char *name, int *slot_no, label **entry);
 static void resolve_a_label_sub (label *sym, instruction *inst, mem_addr pc);
-
-
 
 /* Keep track of the memory location that a label represents.  If we
    see a reference to a label that is not yet defined, then record the
@@ -94,8 +91,6 @@ initialize_symbol_table ()
 
   local_labels = NULL;
 }
-
-
 
 /* Lookup for a label with the given NAME.  Set the SLOT_NO to be the hash
    table bucket that contains (or would contain) the label's record.  If the

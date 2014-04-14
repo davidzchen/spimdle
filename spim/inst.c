@@ -34,17 +34,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
-#include "sym-tbl.h"
-#include "parser.h"
-#include "scanner.h"
-#include "parser_yacc.h"
-#include "data.h"
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/sym-tbl.h"
+#include "spim/parser.h"
+#include "spim/scanner.h"
+#include "spim/parser_yacc.h"
+#include "spim/data.h"
 
 
 /* Local functions: */
@@ -93,7 +93,6 @@ text_begins_at_point (mem_addr addr)
 {
   next_text_pc = addr;
 }
-
 
 void
 k_text_begins_at_point (mem_addr addr)
@@ -179,8 +178,6 @@ store_instruction (instruction *inst)
 	}
     }
 }
-
-
 
 void
 i_type_inst_free (int opcode, int rt, int rs, imm_expr *expr)
@@ -596,8 +593,6 @@ free_inst (instruction *inst)
       free (inst);
     }
 }
-
-
 
 /* Maintain a table mapping from opcode to instruction name and
    instruction type.
@@ -1229,8 +1224,6 @@ addr_expr_reg (addr_expr *expr)
   return (expr->reg_no);
 }
 
-
-
 /* Map between a SPIM instruction and the binary representation of the
    instruction. */
 
@@ -1599,8 +1592,6 @@ mk_j_inst (int32 val, int opcode, int target)
   SET_EXPR (inst, NULL);
   return (inst);
 }
-
-
 
 /* Code to test encode/decode of instructions. */
 

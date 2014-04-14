@@ -32,7 +32,7 @@
 
 
 #ifndef _WIN32
-#include <unistd.h>
+# include <unistd.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -41,18 +41,16 @@
 #include <sys/types.h>
 
 #ifdef _WIN32
-#include <io.h>
+# include <io.h>
 #endif
 
-#include "spim.h"
-#include "string-stream.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
-#include "sym-tbl.h"
-#include "syscall.h"
-
-
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/sym-tbl.h"
+#include "spim/syscall.h"
 
 /* Decides which syscall to execute or simulate.  Returns zero upon
    exit syscall and non-zero to continue execution. */
@@ -203,8 +201,6 @@ do_syscall ()
 
   return (1);
 }
-
-
 
 void
 handle_exception ()

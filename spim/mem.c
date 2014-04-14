@@ -31,12 +31,12 @@
 */
 
 
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
 
 /* Exported Variables: */
 
@@ -84,8 +84,6 @@ static void write_memory_mapped_IO (mem_addr addr, mem_word value);
 /* Local variables: */
 
 static int32 data_size_limit, stack_size_limit, k_data_size_limit;
-
-
 
 /* Memory is allocated in five chunks:
 	text, data, stack, kernel text, and kernel data.
@@ -289,8 +287,6 @@ expand_k_data (int addl_bytes)
        p < k_data_seg_b + new_size / BYTES_PER_WORD; )
     *p ++ = 0;
 }
-
-
 
 /* Access memory */
 
@@ -582,8 +578,6 @@ bad_mem_write (mem_addr addr, mem_word value, int mask)
     RAISE_EXCEPTION (ExcCode_DBE, CP0_BadVAddr = addr)
 }
 
-
-
 /* Memory-mapped IO routines. */
 
 static int recv_control = 0;	/* No input */
@@ -737,8 +731,6 @@ read_memory_mapped_IO (mem_addr addr)
       return (0);
     }
 }
-
-
 
 /* Misc. routines */
 

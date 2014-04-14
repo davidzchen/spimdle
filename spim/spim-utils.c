@@ -36,19 +36,19 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "spim.h"
-#include "version.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "data.h"
-#include "reg.h"
-#include "mem.h"
-#include "scanner.h"
-#include "parser.h"
-#include "parser_yacc.h"
-#include "run.h"
-#include "sym-tbl.h"
+#include "spim/spim.h"
+#include "spim/version.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/data.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/scanner.h"
+#include "spim/parser.h"
+#include "spim/parser_yacc.h"
+#include "spim/run.h"
+#include "spim/sym-tbl.h"
 
 
 /* Internal functions: */
@@ -461,8 +461,6 @@ list_breakpoints ()
   else
     write_output (message_out, "No breakpoints set\n");
 }
-
-
 
 /* Utility routines */
 

@@ -439,16 +439,16 @@
 %{
 #include <stdio.h>
 
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
-#include "sym-tbl.h"
-#include "data.h"
-#include "scanner.h"
-#include "parser.h"
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/sym-tbl.h"
+#include "spim/data.h"
+#include "spim/scanner.h"
+#include "spim/parser.h"
 
 
 /* return (0) */
@@ -508,8 +508,6 @@ static char *input_file_name;	/* Name of file being parsed */
 
 %}
 
-
-
 %%
 
 LINE:		{parse_error_occurred = false; scanner_start_line (); } LBL_CMD ;
@@ -566,8 +564,6 @@ TERM:		Y_NL
 		  FILE_PARSE_DONE;
 		}
 	;
-
-
 
 ASM_CODE:	LOAD_OPS	DEST	ADDRESS
 		{
@@ -1607,8 +1603,6 @@ ASM_CODE:	LOAD_OPS	DEST	ADDRESS
 		}
 	;
 
-
-
 LOAD_OPS:	Y_LB_OP
 	|	Y_LBU_OP
 	|	Y_LH_OP
@@ -2087,8 +2081,6 @@ FP_CMP_OPS_REV2:	Y_C_EQ_PS_OP
 	|	Y_C_UN_PS_OP
 	;
 
-
-
 ASM_DIRECTIVE:	Y_ALIAS_DIR	Y_REG	Y_REG
 
 	|	Y_ALIGN_DIR	EXPR
@@ -2375,8 +2367,6 @@ ASM_DIRECTIVE:	Y_ALIAS_DIR	Y_REG	Y_REG
 
 	;
 
-
-
 ADDRESS:	{only_id = 1;} ADDR {only_id = 0; $$ = $2;}
 
 ADDR:		'(' REGISTER ')'
@@ -2647,7 +2637,6 @@ OPT_ID:		ID
 
 ID:		{only_id = 1;} Y_ID {only_id = 0; $$ = $2;}
 
-
 %%
 
 /* Maintain and update the address of labels for the current line. */
@@ -2864,8 +2853,6 @@ store_word_data (int value)
   else if (text_dir)
     store_instruction (inst_decode (value));
 }
-
-
 
 void
 initialize_parser (char *file_name)

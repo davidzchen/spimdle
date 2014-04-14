@@ -32,15 +32,15 @@
 */
 
 
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "sym-tbl.h"
-#include "parser.h"
-#include "scanner.h"
-#include "parser_yacc.h"
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/sym-tbl.h"
+#include "spim/parser.h"
+#include "spim/scanner.h"
+#include "spim/parser_yacc.h"
 
 #ifdef _WIN32
 #include <io.h>

@@ -30,7 +30,6 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #ifdef mips
 #define _IEEE 1
 #include <nan.h>
@@ -43,24 +42,24 @@
 
 #ifdef _WIN32
 #define VC_EXTRALEAN
-#include <Windows.h>
+# include <Windows.h>
 #else
-#include <errno.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <sys/time.h>
+# include <errno.h>
+# include <stdlib.h>
+# include <signal.h>
+# include <sys/time.h>
 #endif
 
-#include "spim.h"
-#include "string-stream.h"
-#include "spim-utils.h"
-#include "inst.h"
-#include "reg.h"
-#include "mem.h"
-#include "sym-tbl.h"
-#include "parser_yacc.h"
-#include "syscall.h"
-#include "run.h"
+#include "spim/spim.h"
+#include "spim/string-stream.h"
+#include "spim/spim-utils.h"
+#include "spim/inst.h"
+#include "spim/reg.h"
+#include "spim/mem.h"
+#include "spim/sym-tbl.h"
+#include "spim/parser_yacc.h"
+#include "spim/syscall.h"
+#include "spim/run.h"
 
 bool force_break = false;	/* For the execution env. to force an execution break */
 
@@ -68,7 +67,6 @@ bool force_break = false;	/* For the execution env. to force an execution break 
 /* Disable MS VS warning about constant predicate in conditional. */
 #pragma warning(disable: 4127)
 #endif
-
 
 /* Local functions: */
 
@@ -177,8 +175,6 @@ static int running_in_delay_slot = 0;
 		    delayed_load_value2 = delayed_load_value1;	\
 		    delayed_load_addr1 = NULL;			\
 		   }
-
-
 
 /* Run the program stored in memory, starting at address PC for
    STEPS_TO_RUN instruction executions.  If flag DISPLAY is true, print

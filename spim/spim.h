@@ -89,8 +89,6 @@ typedef union {int i; void* p;} intptr_union;
 #include <string.h>
 #define QSORT_FUNC int(*)(const void *, const void *)
 
-
-
 #define K 1024
 
 
@@ -214,8 +212,6 @@ typedef uint32 /*@alt int @*/ mem_addr;
 /* Iterval (milliseconds) for the hardware timer in CP0. */
 
 #define TIMER_TICK_MS 10	/* 100 times per second */
-
-
 
 /* A port is either a Unix file descriptor (an int) or a FILE* pointer. */
 

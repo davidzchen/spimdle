@@ -52,8 +52,6 @@ typedef struct addrexpr
   imm_expr *imm;		/* The immediate part */
 } addr_expr;
 
-
-
 /* Representation of an instruction. Store the instruction fields in an
    overlapping manner similar to the real encoding (but not identical, to
    speed decoding in C code, as opposed to hardware).. */
@@ -91,10 +89,8 @@ typedef struct inst_s
   char *source_line;
 } instruction;
 
-
 #define OPCODE(INST)		(INST)->opcode
 #define SET_OPCODE(INST, VAL)	(INST)->opcode = (short)(VAL)
-
 
 #define RS(INST)		(INST)->r_t.r_i.rs
 #define SET_RS(INST, VAL)	(INST)->r_t.r_i.rs = (unsigned char)(VAL)
@@ -212,8 +208,6 @@ extern int exception_occurred;
 #define ExcCode_MCheck	24	/* Machine check (not implemented) */
 #define ExcCode_CacheErr 30	/* Cache error (not impelemented) */
 
-
-
 /* Fields in binary representation of instructions: */
 
 #define BIN_REG(V,O)	(((V) >> O) & 0x1f)
@@ -226,8 +220,6 @@ extern int exception_occurred;
 #define BIN_FT(V)	(BIN_REG(V, 16))
 #define BIN_FS(V)	(BIN_REG(V, 11))
 #define BIN_FD(V)	(BIN_REG(V, 6))
-
-
 
 /* Exported functions: */
 
