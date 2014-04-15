@@ -30,7 +30,6 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #ifndef WIN32
 # include <unistd.h>
 #endif
@@ -39,7 +38,6 @@
 # include <setjmp.h>
 # include <signal.h>
 #include <arpa/inet.h>
-
 
 #ifdef RS
 /* This is problem on HP Snakes, which define RS in syscall.h */
@@ -54,7 +52,6 @@
 #  define NBBY 8
 # endif
 #endif
-
 
 #ifndef WIN32
 # include <sys/time.h>
@@ -82,22 +79,21 @@
 
 /* Internal functions: */
 
-static void console_to_program ();
-static void console_to_spim ();
-static void control_c_seen (int /*arg*/);
-static void flush_to_newline ();
-static int get_opt_int ();
-static bool parse_spim_command (FILE *file, bool redo);
-static void print_reg (int reg_no);
-static int print_fp_reg (int reg_no);
-static int print_reg_from_string (char *reg);
-static void print_all_regs (int hex_flag);
-static int read_assembly_command ();
-static int str_prefix (char *s1, char *s2, int min_match);
-static void top_level ();
-static int read_token ();
+static void console_to_program();
+static void console_to_spim();
+static void control_c_seen(int /*arg*/);
+static void flush_to_newline();
+static int get_opt_int();
+static bool parse_spim_command(FILE *file, bool redo);
+static void print_reg(int reg_no);
+static int print_fp_reg(int reg_no);
+static int print_reg_from_string(char *reg);
+static void print_all_regs(int hex_flag);
+static int read_assembly_command();
+static int str_prefix(char *s1, char *s2, int min_match);
+static void top_level();
+static int read_token();
 static bool write_assembled_code(char* program_name);
-
 
 /* Exported Variables: */
 
@@ -116,7 +112,6 @@ bool mapped_io;                        /* => activate memory-mapped IO */
 int pipe_out;
 int spim_return_value;                /* Value returned when spim exits */
 
-
 /* Local variables: */
 
 /* => load standard exception handler */
@@ -130,9 +125,7 @@ static struct termios saved_console_state;
 static int program_argc;
 static char** program_argv;
 
-int
-main (int argc, char **argv)
-{
+int main(int argc, char **argv) {
   int i;
   bool assembly_file_loaded = false;
   int print_usage_msg = 0;
@@ -154,214 +147,188 @@ main (int argc, char **argv)
 
   // write_startup_message ();
 
-  if (getenv ("SPIM_EXCEPTION_HANDLER") != NULL)
-    exception_file_name = getenv ("SPIM_EXCEPTION_HANDLER");
+  if (getenv("SPIM_EXCEPTION_HANDLER") != NULL) {
+    exception_file_name = getenv("SPIM_EXCEPTION_HANDLER");
+  }
 
-  for (i = 1; i < argc; i++)
-    {
+  for (i = 1; i < argc; i++) {
 #ifdef WIN32
-      if (argv [i][0] == '/') { argv [i][0] = '-'; }
+    if (argv[i][0] == '/') {
+      argv[i][0] = '-';
+    }
 #endif
-      if (streq (argv [i], "-asm")
-          || streq (argv [i], "-a"))
-        {
-          bare_machine = false;
-          delayed_branches = false;
-          delayed_loads = false;
-        }
-      else if (streq (argv [i], "-bare")
-               || streq (argv [i], "-b"))
-        {
-          bare_machine = true;
-          delayed_branches = true;
-          delayed_loads = true;
-          quiet = true;
-        }
-      else if (streq (argv [i], "-delayed_branches")
-               || streq (argv [i], "-db"))
-        {
-          delayed_branches = true;
-        }
-      else if (streq (argv [i], "-delayed_loads")
-               || streq (argv [i], "-dl"))
-        {
-          delayed_loads = true;
-        }
-      else if (streq (argv [i], "-exception")
-               || streq (argv [i], "-e"))
-        { load_exception_handler = true; }
-      else if (streq (argv [i], "-noexception")
-               || streq (argv [i], "-ne"))
-        { load_exception_handler = false; }
-      else if (streq (argv [i], "-exception_file")
-               || streq (argv [i], "-ef"))
-        {
-          exception_file_name = argv[++i];
-          load_exception_handler = true;
-        }
-      else if (streq (argv [i], "-mapped_io")
-               || streq (argv [i], "-mio"))
-        { mapped_io = true; }
-      else if (streq (argv [i], "-nomapped_io")
-               || streq (argv [i], "-nmio"))
-        { mapped_io = false; }
-      else if (streq (argv [i], "-pseudo")
-               || streq (argv [i], "-p"))
-        { accept_pseudo_insts = true; }
-      else if (streq (argv [i], "-nopseudo")
-               || streq (argv [i], "-np"))
-        { accept_pseudo_insts = false; }
-      else if (streq (argv [i], "-quiet")
-               || streq (argv [i], "-q"))
-        { quiet = true; }
-      else if (streq (argv [i], "-noquiet")
-               || streq (argv [i], "-nq"))
-        { quiet = false; }
-      else if (streq (argv [i], "-trap")
-               || streq (argv [i], "-t"))
-        { load_exception_handler = true; }
-      else if (streq (argv [i], "-notrap")
-               || streq (argv [i], "-nt"))
-        { load_exception_handler = false; }
-      else if (streq (argv [i], "-trap_file")
-               || streq (argv [i], "-tf"))
-        {
-          exception_file_name = argv[++i];
-          load_exception_handler = true;
-        }
-      else if (streq (argv [i], "-stext")
-               || streq (argv [i], "-st"))
-        { initial_text_size = atoi (argv[++i]); }
-      else if (streq (argv [i], "-sdata")
-               || streq (argv [i], "-sd"))
-        { initial_data_size = atoi (argv[++i]); }
-      else if (streq (argv [i], "-ldata")
-               || streq (argv [i], "-ld"))
-        { initial_data_limit = atoi (argv[++i]); }
-      else if (streq (argv [i], "-sstack")
-               || streq (argv [i], "-ss"))
-        { initial_stack_size = atoi (argv[++i]); }
-      else if (streq (argv [i], "-lstack")
-               || streq (argv [i], "-ls"))
-        { initial_stack_limit = atoi (argv[++i]); }
-      else if (streq (argv [i], "-sktext")
-               || streq (argv [i], "-skt"))
-        { initial_k_text_size = atoi (argv[++i]); }
-      else if (streq (argv [i], "-skdata")
-               || streq (argv [i], "-skd"))
-        { initial_k_data_size = atoi (argv[++i]); }
-      else if (streq (argv [i], "-lkdata")
-               || streq (argv [i], "-lkd"))
-        { initial_k_data_limit = atoi (argv[++i]); }
-      else if (((streq (argv [i], "-file")
-                 || streq (argv [i], "-f"))
-                && (i + 1 < argc))
-               /* Assume this argument is a file name and everything following are
-                  arguments for program */
-               || (argv [i][0] != '-'))
-        {
-          program_argc = argc - (i + 1);
-          program_argv = &argv[i + 1]; /* Everything following is argv */
+    if (streq(argv [i], "-asm") ||
+        streq (argv [i], "-a")) {
+      bare_machine = false;
+      delayed_branches = false;
+      delayed_loads = false;
+    } else if (streq(argv [i], "-bare") ||
+               streq(argv [i], "-b")) {
+      bare_machine = true;
+      delayed_branches = true;
+      delayed_loads = true;
+      quiet = true;
+    } else if (streq(argv [i], "-delayed_branches") ||
+               streq(argv [i], "-db")) {
+      delayed_branches = true;
+    } else if (streq(argv [i], "-delayed_loads") ||
+               streq (argv [i], "-dl")) {
+      delayed_loads = true;
+    } else if (streq(argv [i], "-exception") ||
+               streq (argv [i], "-e")) {
+      load_exception_handler = true;
+    } else if (streq(argv [i], "-noexception") ||
+               streq (argv [i], "-ne")) {
+      load_exception_handler = false;
+    } else if (streq(argv [i], "-exception_file") ||
+               streq(argv [i], "-ef")) {
+      exception_file_name = argv[++i];
+      load_exception_handler = true;
+    } else if (streq(argv [i], "-mapped_io") ||
+               streq(argv [i], "-mio")) {
+      mapped_io = true;
+    } else if (streq(argv [i], "-nomapped_io") ||
+               streq(argv [i], "-nmio")) {
+        mapped_io = false;
+    } else if (streq(argv [i], "-pseudo") ||
+               streq(argv [i], "-p")) {
+      accept_pseudo_insts = true;
+    } else if (streq (argv [i], "-nopseudo") ||
+             streq (argv [i], "-np")) {
+      accept_pseudo_insts = false;
+    } else if (streq(argv [i], "-quiet") ||
+               streq(argv [i], "-q")) {
+      quiet = true;
+    } else if (streq(argv [i], "-noquiet") ||
+               streq(argv [i], "-nq")) {
+      quiet = false;
+    } else if (streq(argv [i], "-trap") ||
+               streq(argv [i], "-t")) {
+      load_exception_handler = true;
+    } else if (streq(argv [i], "-notrap") ||
+               streq(argv [i], "-nt")) {
+      load_exception_handler = false;
+    } else if (streq(argv [i], "-trap_file") ||
+               streq(argv [i], "-tf")) {
+      exception_file_name = argv[++i];
+      load_exception_handler = true;
+    } else if (streq(argv [i], "-stext") ||
+               streq(argv [i], "-st")) {
+      initial_text_size = atoi (argv[++i]);
+    } else if (streq(argv [i], "-sdata") ||
+               streq(argv [i], "-sd")) {
+      initial_data_size = atoi (argv[++i]);
+    } else if (streq(argv [i], "-ldata") ||
+               streq(argv [i], "-ld")) {
+      initial_data_limit = atoi (argv[++i]);
+    } else if (streq(argv [i], "-sstack") ||
+               streq(argv [i], "-ss")) {
+      initial_stack_size = atoi (argv[++i]);
+    } else if (streq(argv [i], "-lstack") ||
+               streq(argv [i], "-ls")) {
+      initial_stack_limit = atoi (argv[++i]);
+    } else if (streq(argv [i], "-sktext") ||
+               streq(argv [i], "-skt")) {
+      initial_k_text_size = atoi (argv[++i]);
+    } else if (streq(argv [i], "-skdata") ||
+               streq(argv [i], "-skd")) {
+      initial_k_data_size = atoi (argv[++i]);
+    } else if (streq(argv [i], "-lkdata") ||
+               streq(argv [i], "-lkd")) {
+      initial_k_data_limit = atoi (argv[++i]);
+             /* Assume this argument is a file name and everything following are
+                arguments for program */
+    } else if (((streq (argv [i], "-file") ||
+                 streq (argv [i], "-f")) && (i + 1 < argc)) ||
+               (argv [i][0] != '-')) {
+      program_argc = argc - (i + 1);
+      /* Everything following is argv */
+      program_argv = &argv[i + 1];
 
-          if (!assembly_file_loaded)
-            {
-              initialize_world (load_exception_handler ? exception_file_name : NULL);
-              initialize_run_stack (program_argc, program_argv);
-            }
-          assembly_file_loaded = read_assembly_file (argv[++i]) || assembly_file_loaded;
-          break;
-        }
-      else if (streq (argv [i], "-assemble"))
-        { assemble = true; }
-      else
-        {
-          error ("\nUnknown argument: %s (ignored)\n", argv[i]);
-          print_usage_msg = 1;
-        }
+      if (!assembly_file_loaded) {
+        initialize_world(load_exception_handler ? exception_file_name : NULL);
+        initialize_run_stack(program_argc, program_argv);
+      }
+      assembly_file_loaded = read_assembly_file (argv[++i]) ||
+                             assembly_file_loaded;
+      break;
+    } else if (streq (argv [i], "-assemble")) {
+      assemble = true;
+    } else {
+      error ("\nUnknown argument: %s (ignored)\n", argv[i]);
+      print_usage_msg = 1;
     }
+  }
 
-  if (print_usage_msg)
-    {
-      error ("Usage: spim\n\
-        -bare                        Bare machine (no pseudo-ops, delayed branches and loads)\n\
-        -asm                        Extended machine (pseudo-ops, no delayed branches and loads) (default)\n\
-        -delayed_branches        Execute delayed branches\n\
-        -delayed_loads                Execute delayed loads\n\
-        -exception                Load exception handler (default)\n\
-        -noexception                Do not load exception handler\n\
-        -exception_file <file>        Specify exception handler in place of default\n\
-        -quiet                        Do not print warnings\n\
-        -noquiet                Print warnings (default)\n\
-        -mapped_io                Enable memory-mapped IO\n\
-        -nomapped_io                Do not enable memory-mapped IO (default)\n\
-        -file <file> <args>        Assembly code file and arguments to program\n\
-        -assemble                Write assembled code to standard output\n");
-    }
+  if (print_usage_msg) {
+    error ("Usage: spim\n\
+      -bare                        Bare machine (no pseudo-ops, delayed branches and loads)\n\
+      -asm                        Extended machine (pseudo-ops, no delayed branches and loads) (default)\n\
+      -delayed_branches        Execute delayed branches\n\
+      -delayed_loads                Execute delayed loads\n\
+      -exception                Load exception handler (default)\n\
+      -noexception                Do not load exception handler\n\
+      -exception_file <file>        Specify exception handler in place of default\n\
+      -quiet                        Do not print warnings\n\
+      -noquiet                Print warnings (default)\n\
+      -mapped_io                Enable memory-mapped IO\n\
+      -nomapped_io                Do not enable memory-mapped IO (default)\n\
+      -file <file> <args>        Assembly code file and arguments to program\n\
+      -assemble                Write assembled code to standard output\n");
+  }
 
-
-  if (!assembly_file_loaded)
-    {
-      initialize_world (load_exception_handler ? exception_file_name : NULL);
+  if (!assembly_file_loaded) {
+    initialize_world (load_exception_handler ? exception_file_name : NULL);
+    initialize_run_stack (program_argc, program_argv);
+    top_level ();
+  } else {
+    /* assembly_file_loaded */
+    if (assemble) {
+      return write_assembled_code (program_argv[0]);
+    } else {
+      bool continuable;
+      console_to_program ();
       initialize_run_stack (program_argc, program_argv);
-      top_level ();
+      if (!setjmp (spim_top_level_env)) {
+        char *undefs = undefined_symbol_string ();
+        if (undefs != NULL) {
+          write_output(message_out, "The following symbols are undefined:\n");
+          write_output(message_out, undefs);
+          write_output(message_out, "\n");
+          free(undefs);
+        }
+        run_program(find_symbol_address (DEFAULT_RUN_LOCATION), DEFAULT_RUN_STEPS, false, false, &continuable);
+      }
+      console_to_spim();
     }
-  else /* assembly_file_loaded */
-    {
-     if (assemble)
-       {
-         return write_assembled_code (program_argv[0]);
-       }
-     else
-       {
-         bool continuable;
-         console_to_program ();
-         initialize_run_stack (program_argc, program_argv);
-         if (!setjmp (spim_top_level_env))
-           {
-             char *undefs = undefined_symbol_string ();
-             if (undefs != NULL)
-               {
-                 write_output (message_out, "The following symbols are undefined:\n");
-                 write_output (message_out, undefs);
-                 write_output (message_out, "\n");
-                 free (undefs);
-               }
-             run_program (find_symbol_address (DEFAULT_RUN_LOCATION), DEFAULT_RUN_STEPS, false, false, &continuable);
-           }
-         console_to_spim ();
-       }
-    }
-
-  return (spim_return_value);
+  }
+  return spim_return_value;
 }
 
 /* Top-level read-eval-print loop for SPIM. */
 
-static void
-top_level ()
-{
-  bool redo = false;            /* => reexecute last command */
+static void top_level() {
+  // => reexecute last command
+  bool redo = false;
 
-  (void)signal (SIGINT, control_c_seen);
-  while (1)
-    {
-      if (!redo)
-        write_output (message_out, "(spim) ");
-      if (!setjmp (spim_top_level_env))
-        redo = parse_spim_command (stdin, redo);
-      else
-        redo = false;
-      fflush (stdout);
-      fflush (stderr);
+  (void)signal(SIGINT, control_c_seen);
+  while (1) {
+    if (!redo) {
+      write_output(message_out, "(spim) ");
     }
+    if (!setjmp(spim_top_level_env)) {
+      redo = parse_spim_command(stdin, redo);
+    } else {
+      redo = false;
+    }
+    fflush(stdout);
+    fflush(stderr);
+  }
 }
-
-static void
-control_c_seen (int /*arg*/)
-{
-  console_to_spim ();
-  write_output (message_out, "\nExecution interrupted\n");
-  longjmp (spim_top_level_env, 1);
+static void control_c_seen (int /*arg*/) {
+  console_to_spim();
+  write_output(message_out, "\nExecution interrupted\n");
+  longjmp(spim_top_level_env, 1);
 }
 
 /* SPIM commands */
@@ -388,171 +355,173 @@ enum {
   DUMP_TEXT_CMD
 };
 
-
 /* Parse a SPIM command from the FILE and execute it.  If REDO is true,
    don't read a new command; just rexecute the previous one.
    Return true if the command was to redo the previous command. */
 
-static bool
-parse_spim_command (FILE *file, bool redo)
-{
+static bool parse_spim_command(FILE *file, bool redo) {
   static int prev_cmd = NOP_CMD; /* Default redo */
   static int prev_token;
   int cmd;
 
-  initialize_scanner (file);
-  initialize_parser ("<standard input>");
-  switch (cmd = (redo ? prev_cmd : read_assembly_command ()))
-    {
+  initialize_scanner(file);
+  initialize_parser("<standard input>");
+  switch (cmd = (redo ? prev_cmd : read_assembly_command())) {
     case EXIT_CMD:
-      console_to_spim ();
-      exit (0);
+      console_to_spim();
+      exit(0);
 
-    case READ_CMD:
-      {
-        int token = (redo ? prev_token : read_token ());
+    case READ_CMD: {
+      int token = (redo ? prev_token : read_token ());
 
-        if (!redo) flush_to_newline ();
-        if (token == Y_STR)
-          {
-            read_assembly_file ((char *) yylval.p);
-            initialize_scanner (file); /* Reinitialize! */
-          }
-        else
-          error ("Must supply a filename to read\n");
-        prev_cmd = READ_CMD;
-        return (0);
+      if (!redo) {
+        flush_to_newline ();
+      }
+      if (token == Y_STR) {
+        read_assembly_file ((char *) yylval.p);
+        initialize_scanner (file); /* Reinitialize! */
+      }
+      else
+        error ("Must supply a filename to read\n");
+      prev_cmd = READ_CMD;
+      return (0);
+    }
+
+    case RUN_CMD: {
+      static mem_addr addr;
+      bool continuable;
+
+      addr = (redo ? addr : get_opt_int ());
+      if (addr == 0) {
+        addr = starting_address ();
       }
 
-    case RUN_CMD:
-      {
-        static mem_addr addr;
+      initialize_run_stack (program_argc, program_argv);
+      console_to_program ();
+      if (addr != 0) {
+        char *undefs = undefined_symbol_string ();
+        if (undefs != NULL) {
+          write_output (message_out, "The following symbols are undefined:\n");
+          write_output (message_out, undefs);
+          write_output (message_out, "\n");
+          free (undefs);
+        }
+
+        if (run_program(addr, DEFAULT_RUN_STEPS, false, false, &continuable)) {
+          write_output(message_out, "Breakpoint encountered at 0x%08x\n", PC);
+        }
+      }
+      console_to_spim ();
+
+      prev_cmd = RUN_CMD;
+      return (0);
+    }
+
+    case CONTINUE_CMD: {
+      if (PC != 0) {
         bool continuable;
-
-        addr = (redo ? addr : get_opt_int ());
-        if (addr == 0)
-          addr = starting_address ();
-
-        initialize_run_stack (program_argc, program_argv);
         console_to_program ();
-        if (addr != 0)
-        {
-          char *undefs = undefined_symbol_string ();
-          if (undefs != NULL)
-            {
-              write_output (message_out, "The following symbols are undefined:\n");
-              write_output (message_out, undefs);
-              write_output (message_out, "\n");
-              free (undefs);
-            }
+        if (run_program (PC, DEFAULT_RUN_STEPS, false, true, &continuable))
+          write_output (message_out, "Breakpoint encountered at 0x%08x\n", PC);
+        console_to_spim ();
+      }
+      prev_cmd = CONTINUE_CMD;
+      return (0);
+    }
 
-          if (run_program (addr, DEFAULT_RUN_STEPS, false, false, &continuable))
-            write_output (message_out, "Breakpoint encountered at 0x%08x\n", PC);
+    case STEP_CMD: {
+      static int steps;
+      mem_addr addr;
+
+      steps = (redo ? steps : get_opt_int ());
+      addr = PC == 0 ? starting_address () : PC;
+
+      if (steps == 0) {
+        steps = 1;
+      }
+      if (addr != 0) {
+        bool continuable;
+        console_to_program ();
+        if (run_program (addr, steps, true, true, &continuable)) {
+          write_output (message_out, "Breakpoint encountered at 0x%08x\n", PC);
         }
         console_to_spim ();
-
-        prev_cmd = RUN_CMD;
-        return (0);
       }
 
-    case CONTINUE_CMD:
-      {
-        if (PC != 0)
-          {
-            bool continuable;
-            console_to_program ();
-            if (run_program (PC, DEFAULT_RUN_STEPS, false, true, &continuable))
-              write_output (message_out, "Breakpoint encountered at 0x%08x\n", PC);
-            console_to_spim ();
+      prev_cmd = STEP_CMD;
+      return (0);
+    }
+
+    case PRINT_CMD: {
+      int token = (redo ? prev_token : read_token ());
+      static int loc;
+      if (token == Y_REG) {
+        if (redo) {
+          loc += 1;
+        } else {
+          loc = yylval.i;
+        }
+        print_reg (loc);
+      } else if (token == Y_FP_REG) {
+        if (redo) {
+          loc += 2;
+        } else {
+          loc = yylval.i;
+        }
+        print_fp_reg (loc);
+      } else if (token == Y_INT) {
+        if (redo) {
+          loc += 4;
+        } else {
+          loc = yylval.i;
+        }
+        print_mem (loc);
+      } else if (token == Y_ID) {
+        if (!print_reg_from_string ((char *) yylval.p)) {
+          if (redo) {
+            loc += 4;
+          } else {
+            loc = find_symbol_address ((char *) yylval.p);
           }
-        prev_cmd = CONTINUE_CMD;
-        return (0);
-      }
 
-    case STEP_CMD:
-      {
-        static int steps;
-        mem_addr addr;
-
-        steps = (redo ? steps : get_opt_int ());
-        addr = PC == 0 ? starting_address () : PC;
-
-        if (steps == 0)
-          steps = 1;
-        if (addr != 0)
-          {
-            bool continuable;
-            console_to_program ();
-            if (run_program (addr, steps, true, true, &continuable))
-              write_output (message_out, "Breakpoint encountered at 0x%08x\n", PC);
-            console_to_spim ();
-          }
-
-        prev_cmd = STEP_CMD;
-        return (0);
-      }
-
-    case PRINT_CMD:
-      {
-        int token = (redo ? prev_token : read_token ());
-        static int loc;
-
-        if (token == Y_REG)
-          {
-            if (redo) loc += 1;
-            else loc = yylval.i;
-            print_reg (loc);
-          }
-        else if (token == Y_FP_REG)
-          {
-            if (redo) loc += 2;
-            else loc = yylval.i;
-            print_fp_reg (loc);
-          }
-        else if (token == Y_INT)
-          {
-            if (redo) loc += 4;
-            else loc = yylval.i;
+          if (loc != 0) {
             print_mem (loc);
+          } else {
+            error ("Unknown label: %s\n", yylval.p);
           }
-        else if (token == Y_ID)
-          {
-            if (!print_reg_from_string ((char *) yylval.p))
-              {
-                if (redo) loc += 4;
-                else loc = find_symbol_address ((char *) yylval.p);
-
-                if (loc != 0)
-                  print_mem (loc);
-                else
-                  error ("Unknown label: %s\n", yylval.p);
-              }
-          }
-        else
-          error ("Print what?\n");
-        if (!redo) flush_to_newline ();
-        prev_cmd = PRINT_CMD;
-        prev_token = token;
-        return (0);
+        }
+      } else {
+        error ("Print what?\n");
       }
+      if (!redo) {
+        flush_to_newline ();
+      }
+      prev_cmd = PRINT_CMD;
+      prev_token = token;
+      return (0);
+    }
 
     case PRINT_SYM_CMD:
       print_symbols ();
-      if (!redo) flush_to_newline ();
+      if (!redo) {
+        flush_to_newline ();
+      }
       prev_cmd = NOP_CMD;
       return (0);
 
-    case PRINT_ALL_REGS_CMD:
-      {
-        int hex_flag = 0;
-        int token = (redo ? prev_token : read_token ());
-        if (token == Y_ID && streq((char*)yylval.p, "hex"))
-          hex_flag = 1;
-        print_all_regs (hex_flag);
-        if (!redo) flush_to_newline ();
-        prev_cmd = NOP_CMD;
-        return (0);
+    case PRINT_ALL_REGS_CMD: {
+      int hex_flag = 0;
+      int token = (redo ? prev_token : read_token ());
+      if (token == Y_ID && streq((char*)yylval.p, "hex")) {
+        hex_flag = 1;
       }
+      print_all_regs (hex_flag);
+      if (!redo) {
+        flush_to_newline ();
+      }
+      prev_cmd = NOP_CMD;
+      return (0);
+    }
 
     case REINITIALIZE_CMD:
       flush_to_newline ();
@@ -575,299 +544,290 @@ parse_spim_command (FILE *file, bool redo)
       return (0);
 
     case HELP_CMD:
-      if (!redo) flush_to_newline ();
-      write_output (message_out, "\nSPIM is a MIPS32 simulator.\n");
-      write_output (message_out, "Its top-level commands are:\n");
-      write_output (message_out, "exit  -- Exit the simulator\n");
-      write_output (message_out, "quit  -- Exit the simulator\n");
-      write_output (message_out,
-                    "read \"FILE\" -- Read FILE containing assembly code into memory\n");
-      write_output (message_out,
-                    "load \"FILE\" -- Same as read\n");
-      write_output (message_out,
-                    "run <ADDR> -- Start the program at (optional) ADDRESS\n");
-      write_output (message_out,
-                    "step <N> -- Step the program for N instructions (default 1)\n");
-      write_output (message_out,
-                    "continue -- Continue program execution without stepping\n");
-      write_output (message_out, "print $N -- Print register N\n");
-      write_output (message_out,
-                    "print $fN -- Print floating point register N\n");
-      write_output (message_out,
-                    "print ADDR -- Print contents of memory at ADDRESS\n");
-      write_output (message_out,
-                    "print_symbols -- Print all global symbols\n");
-      write_output (message_out,
-                    "print_all_regs -- Print all MIPS registers\n");
-      write_output (message_out,
-                    "print_all_regs hex -- Print all MIPS registers in hex\n");
-      write_output (message_out,
-                    "reinitialize -- Clear the memory and registers\n");
-      write_output (message_out,
-                    "breakpoint <ADDR> -- Set a breakpoint at address ADDR\n");
-      write_output (message_out,
-                    "delete <ADDR> -- Delete breakpoint at address ADDR\n");
-      write_output (message_out, "list -- List all breakpoints\n");
-      write_output (message_out, "dump [ \"FILE\" ] -- Dump binary code to spim.dump or FILE in network byte order\n");
-      write_output (message_out, "dumpnative [ \"FILE\" ] -- Dump binary code to spim.dump or FILE in host byte order\n");
-      write_output (message_out,
-                    ". -- Rest of line is assembly instruction to execute\n");
-      write_output (message_out, "<cr> -- Newline reexecutes previous command\n");
-      write_output (message_out, "? -- Print this message\n");
+      if (!redo) {
+        flush_to_newline ();
+      }
+      write_output(message_out, "\nSPIM is a MIPS32 simulator.\n");
+      write_output(message_out, "Its top-level commands are:\n");
+      write_output(message_out, "exit  -- Exit the simulator\n");
+      write_output(message_out, "quit  -- Exit the simulator\n");
+      write_output(message_out,
+                   "read \"FILE\" -- Read FILE containing assembly code into memory\n");
+      write_output(message_out,
+                   "load \"FILE\" -- Same as read\n");
+      write_output(message_out,
+                   "run <ADDR> -- Start the program at (optional) ADDRESS\n");
+      write_output(message_out,
+                   "step <N> -- Step the program for N instructions (default 1)\n");
+      write_output(message_out,
+                   "continue -- Continue program execution without stepping\n");
+      write_output(message_out, "print $N -- Print register N\n");
+      write_output(message_out,
+                   "print $fN -- Print floating point register N\n");
+      write_output(message_out,
+                   "print ADDR -- Print contents of memory at ADDRESS\n");
+      write_output(message_out,
+                   "print_symbols -- Print all global symbols\n");
+      write_output(message_out,
+                   "print_all_regs -- Print all MIPS registers\n");
+      write_output(message_out,
+                   "print_all_regs hex -- Print all MIPS registers in hex\n");
+      write_output(message_out,
+                   "reinitialize -- Clear the memory and registers\n");
+      write_output(message_out,
+                   "breakpoint <ADDR> -- Set a breakpoint at address ADDR\n");
+      write_output(message_out,
+                   "delete <ADDR> -- Delete breakpoint at address ADDR\n");
+      write_output(message_out, "list -- List all breakpoints\n");
+      write_output(message_out, "dump [ \"FILE\" ] -- Dump binary code to spim.dump or FILE in network byte order\n");
+      write_output(message_out, "dumpnative [ \"FILE\" ] -- Dump binary code to spim.dump or FILE in host byte order\n");
+      write_output(message_out,
+                   ". -- Rest of line is assembly instruction to execute\n");
+      write_output(message_out, "<cr> -- Newline reexecutes previous command\n");
+      write_output(message_out, "? -- Print this message\n");
 
-      write_output (message_out,
-                    "\nMost commands can be abbreviated to their unique prefix\n");
-      write_output (message_out, "e.g., ex(it), re(ad), l(oad), ru(n), s(tep), p(rint)\n\n");
+      write_output(message_out,
+                   "\nMost commands can be abbreviated to their unique prefix\n");
+      write_output(message_out, "e.g., ex(it), re(ad), l(oad), ru(n), s(tep), p(rint)\n\n");
       prev_cmd = HELP_CMD;
       return (0);
 
     case SET_BKPT_CMD:
-    case DELETE_BKPT_CMD:
-      {
-        int token = (redo ? prev_token : read_token ());
-        static mem_addr addr;
+    case DELETE_BKPT_CMD: {
+      int token = (redo ? prev_token : read_token ());
+      static mem_addr addr;
 
-        if (!redo) flush_to_newline ();
-        if (token == Y_INT)
-          addr = redo ? addr + 4 : (mem_addr)yylval.i;
-        else if (token == Y_ID)
-          addr = redo ? addr + 4 : find_symbol_address ((char *) yylval.p);
-        else
-          error ("Must supply an address for breakpoint\n");
-        if (cmd == SET_BKPT_CMD)
-          add_breakpoint (addr);
-        else
-          delete_breakpoint (addr);
-        prev_cmd = cmd;
-
-        return (0);
+      if (!redo) {
+        flush_to_newline ();
       }
+      if (token == Y_INT) {
+        addr = redo ? addr + 4 : (mem_addr)yylval.i;
+      } else if (token == Y_ID){
+        addr = redo ? addr + 4 : find_symbol_address ((char *) yylval.p);
+      } else {
+        error ("Must supply an address for breakpoint\n");
+      }
+      if (cmd == SET_BKPT_CMD) {
+        add_breakpoint (addr);
+      } else {
+        delete_breakpoint (addr);
+      }
+      prev_cmd = cmd;
+      return (0);
+    }
 
     case LIST_BKPT_CMD:
-      if (!redo) flush_to_newline ();
+      if (!redo) {
+        flush_to_newline ();
+      }
       list_breakpoints ();
       prev_cmd = LIST_BKPT_CMD;
       return (0);
 
     case DUMPNATIVE_TEXT_CMD:
-    case DUMP_TEXT_CMD:
-      {
-        int token = (redo ? prev_token : read_token ());
+    case DUMP_TEXT_CMD: {
+      int token = (redo ? prev_token : read_token ());
 
-        FILE *fp = NULL;
-        char *filename = NULL;
+      FILE *fp = NULL;
+      char *filename = NULL;
 
-        int words = 0;
-        mem_addr addr;
-        mem_addr dump_start;
-        mem_addr dump_end;
+      int words = 0;
+      mem_addr addr;
+      mem_addr dump_start;
+      mem_addr dump_end;
 
-        if (token == Y_STR)
-          filename = (char *) yylval.p;
-        else if (token == Y_NL)
-          filename = "spim.dump";
-        else
-          {
-            fprintf (stderr, "usage: %s [ \"filename\" ]\n",
-                     (cmd == DUMP_TEXT_CMD ? "dump" : "dumpnative"));
-            return (0);
-          }
-
-        fp = fopen (filename, "wbt");
-        if (fp == NULL)
-          {
-            perror (filename);
-            return (0);
-          }
-
-        user_kernel_text_segment (false);
-        dump_start = find_symbol_address (END_OF_TRAP_HANDLER_SYMBOL);
-        dump_end = current_text_pc ();
-
-        for (addr = dump_start; addr < dump_end; addr += BYTES_PER_WORD)
-          {
-            int32 code = inst_encode (read_mem_inst (addr));
-            if (cmd == DUMP_TEXT_CMD)
-              code = (int32)htonl ((unsigned long)code);    /* dump in network byte order */
-            (void)fwrite (&code, 1, sizeof(code), fp);
-            words += 1;
-          }
-
-        fclose (fp);
-        fprintf (stderr, "Dumped %d words starting at 0x%08x to file %s\n",
-                 words, (unsigned int)dump_start, filename);
-
-        prev_cmd = cmd;
+      if (token == Y_STR) {
+        filename = (char *) yylval.p;
+      } else if (token == Y_NL) {
+        filename = "spim.dump";
+      } else {
+        fprintf (stderr, "usage: %s [ \"filename\" ]\n",
+                 (cmd == DUMP_TEXT_CMD ? "dump" : "dumpnative"));
         return (0);
       }
+
+      fp = fopen (filename, "wbt");
+      if (fp == NULL) {
+        perror (filename);
+        return (0);
+      }
+
+      user_kernel_text_segment (false);
+      dump_start = find_symbol_address (END_OF_TRAP_HANDLER_SYMBOL);
+      dump_end = current_text_pc ();
+
+      for (addr = dump_start; addr < dump_end; addr += BYTES_PER_WORD) {
+        int32 code = inst_encode (read_mem_inst (addr));
+        if (cmd == DUMP_TEXT_CMD) {
+          /* dump in network byte order */
+          code = (int32)htonl ((unsigned long)code);
+        }
+        (void)fwrite (&code, 1, sizeof(code), fp);
+        words += 1;
+      }
+
+      fclose (fp);
+      fprintf (stderr, "Dumped %d words starting at 0x%08x to file %s\n",
+               words, (unsigned int)dump_start, filename);
+
+      prev_cmd = cmd;
+      return (0);
+    }
 
     default:
       while (read_token () != Y_NL) ;
       error ("Unknown spim command\n");
       return (0);
-    }
+  }
 }
 
 
 /* Read a SPIM command with the scanner and return its ennuemerated
    value. */
 
-static int
-read_assembly_command ()
+static int read_assembly_command ()
 {
   int token = read_token ();
 
-  if (token == Y_NL)                /* Blank line means redo */
+  if (token == Y_NL) {
+    /* Blank line means redo */
     return (REDO_CMD);
-  else if (token != Y_ID)        /* Better be a string */
+  } else if (token != Y_ID) {
+    /* Better be a string */
     return (UNKNOWN_CMD);
-  else if (str_prefix ((char *) yylval.p, "exit", 2))
+  } else if (str_prefix ((char *) yylval.p, "exit", 2)) {
     return (EXIT_CMD);
-  else if (str_prefix ((char *) yylval.p, "quit", 2))
+  } else if (str_prefix ((char *) yylval.p, "quit", 2)) {
     return (EXIT_CMD);
-  else if (str_prefix ((char *) yylval.p, "print", 1))
+  } else if (str_prefix ((char *) yylval.p, "print", 1)) {
     return (PRINT_CMD);
-  else if (str_prefix ((char *) yylval.p, "print_symbols", 7))
+  } else if (str_prefix ((char *) yylval.p, "print_symbols", 7)) {
     return (PRINT_SYM_CMD);
-  else if (str_prefix ((char *) yylval.p, "print_all_regs", 7))
+  } else if (str_prefix ((char *) yylval.p, "print_all_regs", 7)) {
     return (PRINT_ALL_REGS_CMD);
-  else if (str_prefix ((char *) yylval.p, "run", 2))
+  } else if (str_prefix ((char *) yylval.p, "run", 2)) {
     return (RUN_CMD);
-  else if (str_prefix ((char *) yylval.p, "read", 2))
+  } else if (str_prefix ((char *) yylval.p, "read", 2)) {
     return (READ_CMD);
-  else if (str_prefix ((char *) yylval.p, "load", 2))
+  } else if (str_prefix ((char *) yylval.p, "load", 2)) {
     return (READ_CMD);
-  else if (str_prefix ((char *) yylval.p, "reinitialize", 6))
+  } else if (str_prefix ((char *) yylval.p, "reinitialize", 6)) {
     return (REINITIALIZE_CMD);
-  else if (str_prefix ((char *) yylval.p, "step", 1))
+  } else if (str_prefix ((char *) yylval.p, "step", 1)) {
     return (STEP_CMD);
-  else if (str_prefix ((char *) yylval.p, "help", 1))
+  } else if (str_prefix ((char *) yylval.p, "help", 1)) {
     return (HELP_CMD);
-  else if (str_prefix ((char *) yylval.p, "continue", 1))
+  } else if (str_prefix ((char *) yylval.p, "continue", 1)) {
     return (CONTINUE_CMD);
-  else if (str_prefix ((char *) yylval.p, "breakpoint", 2))
+  } else if (str_prefix ((char *) yylval.p, "breakpoint", 2)) {
     return (SET_BKPT_CMD);
-  else if (str_prefix ((char *) yylval.p, "delete", 1))
+  } else if (str_prefix ((char *) yylval.p, "delete", 1)) {
     return (DELETE_BKPT_CMD);
-  else if (str_prefix ((char *) yylval.p, "list", 2))
+  } else if (str_prefix ((char *) yylval.p, "list", 2)) {
     return (LIST_BKPT_CMD);
-  else if (str_prefix ((char *) yylval.p, "dumpnative", 5))
+  } else if (str_prefix ((char *) yylval.p, "dumpnative", 5)) {
     return (DUMPNATIVE_TEXT_CMD);
-  else if (str_prefix ((char *) yylval.p, "dump", 4))
+  } else if (str_prefix ((char *) yylval.p, "dump", 4)) {
     return (DUMP_TEXT_CMD);
-  else if (*(char *) yylval.p == '?')
+  } else if (*(char *) yylval.p == '?') {
     return (HELP_CMD);
-  else if (*(char *) yylval.p == '.')
+  } else if (*(char *) yylval.p == '.') {
     return (ASM_CMD);
-  else
+  } else {
     return (UNKNOWN_CMD);
+  }
 }
-
 
 /* Return non-nil if STRING1 is a (proper) prefix of STRING2. */
 
-static int
-str_prefix (char *s1, char *s2, int min_match)
-{
-  for ( ; *s1 == *s2 && *s1 != '\0'; s1 ++, s2 ++) min_match --;
+static int str_prefix (char *s1, char *s2, int min_match) {
+  for ( ; *s1 == *s2 && *s1 != '\0'; s1 ++, s2 ++) {
+    min_match --;
+  }
   return (*s1 == '\0' && min_match <= 0);
 }
-
 
 /* Read and return an integer from the current line of input.  If the
    line doesn't contain an integer, return 0.  In either case, flush the
    rest of the line, including the newline. */
 
-static int
-get_opt_int ()
-{
+static int get_opt_int() {
   int token;
-
-  if ((token = read_token ()) == Y_INT)
-    {
-      flush_to_newline ();
-      return (yylval.i);
-    }
-  else if (token == Y_NL)
+  if ((token = read_token()) == Y_INT) {
+    flush_to_newline ();
+    return (yylval.i);
+  } else if (token == Y_NL) {
     return (0);
-  else
-    {
-      flush_to_newline ();
-      return (0);
-    }
+  } else {
+    flush_to_newline ();
+    return (0);
+  }
+}
+
+// Flush the rest of the input line up to and including the next newline.
+static void flush_to_newline () {
+  while (read_token() != Y_NL) ;
 }
 
 
-/* Flush the rest of the input line up to and including the next newline. */
-
-static void
-flush_to_newline ()
-{
-  while (read_token () != Y_NL) ;
+// Print register number N.
+static void print_reg(int reg_no) {
+  write_output(message_out, "Reg %d = 0x%08x (%d)\n",
+               reg_no, R[reg_no], R[reg_no]);
 }
 
 
-/* Print register number N. */
-
-static void
-print_reg (int reg_no)
-{
-  write_output (message_out, "Reg %d = 0x%08x (%d)\n", reg_no, R[reg_no], R[reg_no]);
-}
-
-
-static int
-print_fp_reg (int reg_no)
-{
-  if ((reg_no & 1) == 0)
-    write_output (message_out, "FP reg %d = %g (double)\n", reg_no, FPR_D (reg_no));
-  write_output (message_out, "FP reg %d = %g (single)\n", reg_no, FPR_S (reg_no));
+static int print_fp_reg(int reg_no) {
+  if ((reg_no & 1) == 0) {
+    write_output(message_out, "FP reg %d = %g (double)\n",
+                 reg_no, FPR_D (reg_no));
+  }
+  write_output(message_out, "FP reg %d = %g (single)\n",
+               reg_no, FPR_S (reg_no));
   return (1);
 }
 
-
-static int
-print_reg_from_string (char* reg_num)
-{
+static int print_reg_from_string(char* reg_num) {
   char s[100];
   char *s1 = s;
 
   /* Conver to lower case */
-  while (*reg_num != '\0' && s1 - s < 100)
+  while (*reg_num != '\0' && s1 - s < 100) {
     *s1++ = tolower (*reg_num++);
+  }
   *s1 = '\0';
   /* Drop leading $ */
-  if (s[0] == '$')
+  if (s[0] == '$') {
     s1 = s + 1;
-  else
+  } else {
     s1 = s;
+  }
 
-  if (streq (s1, "pc"))
+  if (streq (s1, "pc")) {
     write_output (message_out, "PC = 0x%08x (%d)\n", PC, PC);
-  else if (streq (s1, "hi"))
+  } else if (streq (s1, "hi")) {
     write_output (message_out, "HI = 0x%08x (%d)\n", HI, HI);
-  else if (streq (s1, "lo"))
+  } else if (streq (s1, "lo")) {
     write_output (message_out, "LO = 0x%08x (%d)\n", LO, LO);
-  else if (streq (s1, "fpcond"))
+  } else if (streq (s1, "fpcond")) {
     write_output (message_out, "FCSR = 0x%08x (%d)\n", FCSR, FCSR);
-  else if (streq (s1, "cause"))
+  } else if (streq (s1, "cause")) {
     write_output (message_out, "Cause = 0x%08x (%d)\n", CP0_Cause, CP0_Cause);
-  else if (streq (s1, "epc"))
+  } else if (streq (s1, "epc")) {
     write_output (message_out, "EPC = 0x%08x (%d)\n", CP0_EPC, CP0_EPC);
-  else if (streq (s1, "status"))
+  } else if (streq (s1, "status")) {
     write_output (message_out, "Status = 0x%08x (%d)\n", CP0_Status, CP0_Status);
-  else if (streq (s1, "badvaddr"))
+  } else if (streq (s1, "badvaddr")) {
     write_output (message_out, "BadVAddr = 0x%08x (%d)\n", CP0_BadVAddr, CP0_BadVAddr);
-  else
+  } else {
     return (0);
+  }
 
   return (1);
 }
 
 
-static void
-print_all_regs (int hex_flag)
-{
+static void print_all_regs(int hex_flag) {
   static str_stream ss;
 
   ss_clear (&ss);
@@ -875,14 +835,10 @@ print_all_regs (int hex_flag)
   write_output (message_out, "%s\n", ss_to_string (&ss));
 }
 
-
-static bool
-write_assembled_code(char* program_name)
-{
-  if (parse_error_occurred)
-    {
-      return (parse_error_occurred);
-    }
+static bool write_assembled_code(char* program_name) {
+  if (parse_error_occurred) {
+    return (parse_error_occurred);
+  }
 
   FILE *fp = NULL;
   char *filename = NULL;
@@ -896,11 +852,10 @@ write_assembled_code(char* program_name)
   strcat(filename, ".out");
 
   fp = fopen (filename, "wt");
-  if (fp == NULL)
-    {
-      perror (filename);
-      return (true);
-    }
+  if (fp == NULL) {
+    perror (filename);
+    return (true);
+  }
 
   /* dump text segment */
   user_kernel_text_segment (false);
@@ -908,45 +863,36 @@ write_assembled_code(char* program_name)
   dump_end = current_text_pc ();
 
   (void)fprintf (fp, ".text # 0x%x .. 0x%x\n.word ", dump_start, dump_end);
-  for (addr = dump_start; addr < dump_end; addr += BYTES_PER_WORD)
-    {
-      int32 code = inst_encode (read_mem_inst (addr));
-      (void)fprintf (fp, "0x%x%s", code, addr != (dump_end - BYTES_PER_WORD) ? ", " : "");
-    }
+  for (addr = dump_start; addr < dump_end; addr += BYTES_PER_WORD) {
+    int32 code = inst_encode (read_mem_inst (addr));
+    (void)fprintf (fp, "0x%x%s", code, addr != (dump_end - BYTES_PER_WORD) ? ", " : "");
+  }
   (void)fprintf (fp, "\n");
 
   /* dump data segment */
   user_kernel_data_segment (false);
-  if (bare_machine)
-    {
-      dump_start = 0;
-    }
-    else
-    {
-        dump_start = DATA_BOT;
-    }
+  if (bare_machine) {
+    dump_start = 0;
+  } else {
+    dump_start = DATA_BOT;
+  }
   dump_end = current_data_pc ();
 
-  if (dump_end > dump_start)
-    {
-      (void)fprintf (fp, ".data # 0x%x .. 0x%x\n.word ", dump_start, dump_end);
-      for (addr = dump_start; addr < dump_end; addr += BYTES_PER_WORD)
-        {
-          int32 code = read_mem_word (addr);
-          (void)fprintf (fp, "0x%x%s", code, addr != (dump_end - BYTES_PER_WORD) ? ", " : "");
-        }
-      (void)fprintf (fp, "\n");
+  if (dump_end > dump_start) {
+    (void)fprintf (fp, ".data # 0x%x .. 0x%x\n.word ", dump_start, dump_end);
+    for (addr = dump_start; addr < dump_end; addr += BYTES_PER_WORD) {
+      int32 code = read_mem_word (addr);
+      (void)fprintf (fp, "0x%x%s", code, addr != (dump_end - BYTES_PER_WORD) ? ", " : "");
     }
+    (void)fprintf (fp, "\n");
+  }
 
   fclose (fp);
   return (false);
 }
 
-/* Print an error message. */
-
-void
-error (char *fmt, ...)
-{
+// Print an error message.
+void error(char *fmt, ...) {
   va_list args;
 
   va_start (args, fmt);
@@ -960,11 +906,8 @@ error (char *fmt, ...)
 }
 
 
-/* Print the error message then exit. */
-
-void
-fatal_error (char *fmt, ...)
-{
+// Print the error message then exit.
+void fatal_error (char *fmt, ...) {
   va_list args;
   va_start (args, fmt);
   fmt = va_arg (args, char *);
@@ -977,16 +920,10 @@ fatal_error (char *fmt, ...)
   exit (-1);
 }
 
-
-/* Print an error message and return to top level. */
-
-void
-run_error (char *fmt, ...)
-{
+// Print an error message and return to top level.
+void run_error (char *fmt, ...) {
   va_list args;
-
   va_start (args, fmt);
-
   console_to_spim ();
 
 #ifdef NEED_VFPRINTF
@@ -1000,9 +937,7 @@ run_error (char *fmt, ...)
 
 /* IO facilities: */
 
-void
-write_output (port fp, char *fmt, ...)
-{
+void write_output (port fp, char *fmt, ...) {
   va_list args;
   FILE *f;
   int restore_console_to_program = 0;
@@ -1010,178 +945,152 @@ write_output (port fp, char *fmt, ...)
   va_start (args, fmt);
   f = fp.f;
 
-  if (console_state_saved)
-    {
-      restore_console_to_program = 1;
-      console_to_spim ();
-    }
+  if (console_state_saved) {
+    restore_console_to_program = 1;
+    console_to_spim ();
+  }
 
-  if (f != 0)
-    {
+  if (f != 0) {
 #ifdef NEED_VFPRINTF
-      _doprnt (fmt, args, f);
+    _doprnt (fmt, args, f);
 #else
-      vfprintf (f, fmt, args);
+    vfprintf (f, fmt, args);
 #endif
-      fflush (f);
-    }
-  else
-    {
+    fflush (f);
+  } else {
 #ifdef NEED_VFPRINTF
-      _doprnt (fmt, args, stdout);
+    _doprnt (fmt, args, stdout);
 #else
-      vfprintf (stdout, fmt, args);
+    vfprintf (stdout, fmt, args);
 #endif
-      fflush (stdout);
-    }
+    fflush (stdout);
+  }
   va_end (args);
 
-  if (restore_console_to_program)
+  if (restore_console_to_program) {
     console_to_program ();
+  }
 }
 
-
-/* Simulate the semantics of fgets (not gets) on Unix file. */
-
-void
-read_input (char *str, int str_size)
-{
+// Simulate the semantics of fgets (not gets) on Unix file.
+void read_input(char *str, int str_size) {
   char *ptr;
   int restore_console_to_program = 0;
 
-  if (console_state_saved)
-    {
-      restore_console_to_program = 1;
-      console_to_spim ();
-    }
+  if (console_state_saved) {
+    restore_console_to_program = 1;
+    console_to_spim ();
+  }
 
   ptr = str;
-
-  while (1 < str_size)                /* Reserve space for null */
-    {
-      char buf[1];
-      if (read ((int) console_in.i, buf, 1) <= 0) /* Not in raw mode! */
-        break;
-
-      *ptr ++ = buf[0];
-      str_size -= 1;
-
-      if (buf[0] == '\n')
-        break;
+  while (1 < str_size) {
+    /* Reserve space for null */
+    char buf[1];
+    if (read ((int) console_in.i, buf, 1) <= 0) {
+      /* Not in raw mode! */
+      break;
     }
 
-  if (0 < str_size)
-    *ptr = '\0';                /* Null terminate input */
+    *ptr ++ = buf[0];
+    str_size -= 1;
 
-  if (restore_console_to_program)
+    if (buf[0] == '\n') {
+      break;
+    }
+  }
+
+  if (0 < str_size) {
+    /* Null terminate input */
+    *ptr = '\0';
+  }
+
+  if (restore_console_to_program) {
     console_to_program ();
+  }
 }
 
-
-/* Give the console to the program for IO. */
-
-static void
-console_to_program ()
-{
-  if (mapped_io && !console_state_saved)
-    {
+// Give the console to the program for IO.
+static void console_to_program () {
+  if (mapped_io && !console_state_saved) {
 #ifdef NEED_TERMIOS
-      int flags;
-      ioctl ((int) console_in.i, TIOCGETP, (char *) &saved_console_state);
-      flags = saved_console_state.sg_flags;
-      saved_console_state.sg_flags = (flags | RAW) & ~(CRMOD|ECHO);
-      ioctl ((int) console_in.i, TIOCSETP, (char *) &saved_console_state);
-      saved_console_state.sg_flags = flags;
+    int flags;
+    ioctl ((int) console_in.i, TIOCGETP, (char *) &saved_console_state);
+    flags = saved_console_state.sg_flags;
+    saved_console_state.sg_flags = (flags | RAW) & ~(CRMOD|ECHO);
+    ioctl ((int) console_in.i, TIOCSETP, (char *) &saved_console_state);
+    saved_console_state.sg_flags = flags;
 #else
-      struct termios params;
+    struct termios params;
 
-      tcgetattr (console_in.i, &saved_console_state);
-      params = saved_console_state;
-      params.c_iflag &= ~(ISTRIP|INLCR|ICRNL|IGNCR|IXON|IXOFF|INPCK|BRKINT|PARMRK);
+    tcgetattr (console_in.i, &saved_console_state);
+    params = saved_console_state;
+    params.c_iflag &= ~(ISTRIP|INLCR|ICRNL|IGNCR|IXON|IXOFF|INPCK|BRKINT|PARMRK);
 
-      /* Translate CR -> NL to canonicalize input. */
-      params.c_iflag |= IGNBRK|IGNPAR|ICRNL;
-      params.c_oflag = OPOST|ONLCR;
-      params.c_cflag &= ~PARENB;
-      params.c_cflag |= CREAD|CS8;
-      params.c_lflag = 0;
-      params.c_cc[VMIN] = 1;
-      params.c_cc[VTIME] = 1;
+    /* Translate CR -> NL to canonicalize input. */
+    params.c_iflag |= IGNBRK|IGNPAR|ICRNL;
+    params.c_oflag = OPOST|ONLCR;
+    params.c_cflag &= ~PARENB;
+    params.c_cflag |= CREAD|CS8;
+    params.c_lflag = 0;
+    params.c_cc[VMIN] = 1;
+    params.c_cc[VTIME] = 1;
 
-      tcsetattr (console_in.i, TCSANOW, &params);
+    tcsetattr (console_in.i, TCSANOW, &params);
 #endif
-      console_state_saved = 1;
-    }
+    console_state_saved = 1;
+  }
 }
 
-
-/* Return the console to SPIM. */
-
-static void
-console_to_spim ()
-{
-  if (mapped_io && console_state_saved)
+// Return the console to SPIM.
+static void console_to_spim () {
+  if (mapped_io && console_state_saved) {
 #ifdef NEED_TERMIOS
     ioctl ((int) console_in.i, TIOCSETP, (char *) &saved_console_state);
 #else
     tcsetattr (console_in.i, TCSANOW, &saved_console_state);
 #endif
+  }
   console_state_saved = 0;
 }
 
 
-int
-console_input_available ()
-{
+int console_input_available () {
   fd_set fdset;
   struct timeval timeout;
 
-  if (mapped_io)
-    {
-      timeout.tv_sec = 0;
-      timeout.tv_usec = 0;
-      FD_ZERO (&fdset);
-      FD_SET ((int) console_in.i, &fdset);
-      return (select (sizeof (fdset) * 8, &fdset, NULL, NULL, &timeout));
-    }
-  else
+  if (mapped_io) {
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+    FD_ZERO (&fdset);
+    FD_SET ((int) console_in.i, &fdset);
+    return (select (sizeof (fdset) * 8, &fdset, NULL, NULL, &timeout));
+  } else {
     return (0);
+  }
 }
 
-
-char
-get_console_char ()
-{
+char get_console_char () {
   char buf;
-
-  read ((int) console_in.i, &buf, 1);
-
-  if (buf == 3)                        /* ^C */
+  read((int)console_in.i, &buf, 1);
+  if (buf == 3) {
+    /* ^C */
     control_c_seen (0);
+  }
   return (buf);
 }
 
-
-void
-put_console_char (char c)
-{
+void put_console_char (char c) {
   putc (c, console_out.f);
   fflush (console_out.f);
 }
 
-
-static int
-read_token ()
-{
+static int read_token () {
   int token = yylex ();
-
-  if (token == 0)                /* End of file */
-    {
-      console_to_spim ();
-      exit (0);
-    }
-  else
-    {
-      return (token);
-    }
+  if (token == 0) {
+    /* End of file */
+    console_to_spim ();
+    exit (0);
+  } else {
+    return (token);
+  }
 }
