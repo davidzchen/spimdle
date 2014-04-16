@@ -51,7 +51,7 @@ typedef struct inst_t {
 #define OP(a, b, c, d) {a, d},
 
 inst ops [] = {
-#include "op.h"
+#include "spim/op.h"
 };
 
 int compare_ops(const void *a, const void *b) {

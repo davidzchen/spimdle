@@ -13,3 +13,4 @@ find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
 add_subdirectory(spim)
+add_subdirectory(spimdle)
